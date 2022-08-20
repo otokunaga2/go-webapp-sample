@@ -9,8 +9,17 @@ import (
 
 	"github.com/labstack/echo"
 	_ "github.com/mattn/go-sqlite3"
+	"gopkg.in/go-playground/validator.v8"
 	"gopkg.in/gorp.v1"
 )
+
+type Validator struct {
+	validator *validator.Validate
+}
+
+func (v *Validator) Validate(i interface{}) error {
+	return v.validator.Struct(i)
+}
 
 type Comment struct {
 	Id      int64     `json:"id" db:"id,primarykey,autoincrement"`
@@ -42,6 +51,11 @@ func main() {
 		if err := c.Bind(&comment); err != nil {
 			c.Logger().Error("Bind", err)
 			return c.String(http.StatusBadRequest, "Bind:"+err.Error())
+		}
+		if err := c.Validate(&comment); err != nil {
+			c.Logger().Error("Validate: ", err)
+			return c.String(http.StatusBadRequest, "Validate"+err.Error())
+
 		}
 		c.Logger().Info("Added: %v", comment.Id)
 		return c.JSON(http.StatusCreated, "")
