@@ -37,6 +37,16 @@ func main() {
 		}
 		return c.JSON(http.StatusOK, comments)
 	})
+	e.POST("/api/comments", func(c echo.Context) error {
+		var comment Comment
+		if err := c.Bind(&comment); err != nil {
+			c.Logger().Error("Bind", err)
+			return c.String(http.StatusBadRequest, "Bind:"+err.Error())
+		}
+		c.Logger().Info("Added: %v", comment.Id)
+		return c.JSON(http.StatusCreated, "")
+
+	})
 	e.Static("/", "static/")
 	e.Logger.Fatal(e.Start(":8080"))
 }
